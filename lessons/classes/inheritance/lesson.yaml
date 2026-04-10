@@ -1,0 +1,86 @@
+slug: inheritance
+title: "Inheritance: super(), MRO, and the Object Hierarchy"
+topic: classes
+month: 1
+week: 4
+difficulty: medium
+estimated_minutes: 35
+prerequisites:
+  - basic_class
+next_lesson: iterators
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      Python uses the C3 linearisation algorithm to determine the MRO
+      (Method Resolution Order). For `class C(A, B)`, when Python looks up
+      a method on an instance of C, what is the search order?
+    options:
+      - "B first, then A, then C, then object"
+      - "C first, then A, then B, then object"
+      - "object first, then A, then B, then C"
+      - "C first, then B, then A, then object"
+    correct: 1
+    explanation: >
+      Python searches C → A → B → object (left to right among bases, C3
+      ensures a consistent order). You can inspect it with C.__mro__ or
+      help(C). This matters in multiple inheritance: the first class in the MRO
+      that defines the method wins. In C++ terms, this resolves the diamond
+      problem deterministically — Python has one clear answer, unlike C++'s
+      ambiguous multiple inheritance.
+
+  - id: q2
+    type: short_answer
+    question: >
+      What built-in function do you call inside a subclass method to invoke
+      the next method in the MRO (usually the parent class implementation)?
+    accepted:
+      - "super"
+      - "super()"
+      - "super"
+    explanation: >
+      `super()` returns a proxy that delegates method calls to the next class
+      in the MRO. In `class Dog(Animal)`, calling `super().__init__(name)` in
+      Dog's __init__ calls Animal's __init__ with name. This is cooperative
+      multiple inheritance: each class in the chain calls super() so the whole
+      MRO is traversed in order. Always call super().__init__() unless you
+      explicitly don't want parent initialisation.
+
+  - id: q3
+    type: code
+    title: "Implement Rectangle and Square"
+    description: |
+      Implement two classes: `Rectangle` and `Square(Rectangle)`.
+
+      ```python
+      r = Rectangle(4, 3)
+      r.area()       # 12
+      r.perimeter()  # 14
+      repr(r)        # "Rectangle(width=4, height=3)"
+
+      s = Square(5)
+      s.area()       # 25
+      s.perimeter()  # 20
+      repr(s)        # "Square(side=5)"
+      isinstance(s, Rectangle)  # True
+      ```
+
+      **Requirements**:
+      - `Rectangle.__init__(self, width, height)` stores both dimensions.
+      - `Rectangle.area()` and `Rectangle.perimeter()` compute the values.
+      - `Rectangle.__repr__` returns `"Rectangle(width=W, height=H)"`.
+      - `Square.__init__(self, side)` calls `super().__init__(side, side)`.
+      - `Square.__repr__` returns `"Square(side=S)"` (override Rectangle's repr).
+      - `Square` must NOT redefine `area()` or `perimeter()` — it inherits them.
+
+      **C mental model**: `Rectangle` is a base struct with virtual methods.
+      `Square` extends it, calling the parent's constructor via super(), and
+      overrides only `__repr__`.
+    hint: >
+      Square's __init__ should be a single line: `super().__init__(side, side)`.
+      To get the side back for __repr__, use `self.width` (which equals
+      `self.height` for a square).
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

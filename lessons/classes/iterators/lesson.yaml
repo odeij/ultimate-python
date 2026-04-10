@@ -1,0 +1,83 @@
+slug: iterators
+title: "Iterators: The Protocol Behind Every for Loop"
+topic: classes
+month: 1
+week: 4
+difficulty: medium
+estimated_minutes: 30
+prerequisites:
+  - inheritance
+next_lesson: null
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      What is the difference between an **iterable** and an **iterator**?
+    options:
+      - "They are identical — every iterable is also an iterator"
+      - "An iterable has __iter__ which returns an iterator; an iterator has __next__ which returns the next value and raises StopIteration when exhausted"
+      - "An iterator can only be used once; an iterable always supports multiple passes and does not have __next__"
+      - "B and C are both correct"
+    correct: 3
+    explanation: >
+      Both B and C are correct. An iterable has __iter__ (e.g. list, tuple,
+      str — they return a fresh iterator each time). An iterator has both
+      __iter__ (returns self) and __next__ (returns next value or raises
+      StopIteration). The for loop calls iter(obj) to get an iterator, then
+      next() repeatedly until StopIteration. A list is iterable but not an
+      iterator; list.__iter__() returns a list_iterator which IS an iterator.
+
+  - id: q2
+    type: short_answer
+    question: >
+      What dunder method must every iterator implement so that `next(obj)`
+      works on it?
+    accepted:
+      - "__next__"
+      - "__next__()"
+      - "next"
+    explanation: >
+      `__next__` is called by the built-in `next()` function. It must return
+      the next value or raise StopIteration to signal exhaustion.
+      `__iter__` must also be implemented (returning self) so that iterators
+      can be used anywhere an iterable is expected — including directly in
+      for loops.
+
+  - id: q3
+    type: code
+    title: "Implement class Countdown"
+    description: |
+      Implement a `Countdown` iterator class that counts down from a given
+      start value to 0 (inclusive).
+
+      ```python
+      for n in Countdown(3):
+          print(n)
+      # 3
+      # 2
+      # 1
+      # 0
+
+      list(Countdown(0))   # [0]
+      list(Countdown(5))   # [5, 4, 3, 2, 1, 0]
+      ```
+
+      **Requirements**:
+      - `__init__(self, start)` — stores the starting value.
+      - `__iter__` — returns `self`.
+      - `__next__` — returns the current value and decrements; raises
+        `StopIteration` when the counter goes below 0.
+      - Each fresh `Countdown(n)` object starts from scratch (no shared state).
+
+      **C mental model**: this is a for-loop iterator — exactly the struct +
+      function pair you'd write in C for a custom range:
+      `struct Countdown { int current; }` with a `next()` function that
+      returns current-- or signals done.
+    hint: >
+      Store `self.current = start`. In __next__: if `self.current < 0`,
+      raise StopIteration. Otherwise store the value, decrement self.current,
+      and return the stored value.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

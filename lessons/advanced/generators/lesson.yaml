@@ -1,0 +1,81 @@
+slug: generators
+title: "Generators: Lazy Sequences and the Iterator Protocol"
+topic: advanced
+month: 1
+week: 3
+difficulty: medium
+estimated_minutes: 35
+prerequisites:
+  - context_managers
+next_lesson: basic_class
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      What does calling a generator function (a function containing `yield`)
+      return?
+    options:
+      - "The first yielded value — the function runs until the first yield"
+      - "None — generator functions never return values directly"
+      - "A generator object — the function body has NOT started executing yet"
+      - "A list of all values the generator would yield"
+    correct: 2
+    explanation: >
+      Calling a generator function does NOT execute any of the function body.
+      It returns a generator object immediately. The body only runs when you
+      call next() on the object (or iterate it). The first next() call runs
+      the body until the first `yield`, pauses there, and returns the yielded
+      value. This lazy evaluation is the entire point of generators.
+
+  - id: q2
+    type: short_answer
+    question: >
+      What exception does a generator raise (and a for-loop silently catches)
+      when it has no more values to yield?
+    accepted:
+      - "stopiteration"
+      - "StopIteration"
+      - "StopIteration exception"
+    explanation: >
+      When a generator function returns (either explicitly with `return` or
+      by falling off the end), Python raises StopIteration inside the generator
+      object. The for-loop protocol catches this exception to know when to stop
+      iterating. You can also raise it explicitly with `return value` inside a
+      generator — the value becomes the `.value` attribute of the StopIteration.
+
+  - id: q3
+    type: code
+    title: "Implement running_average(numbers)"
+    description: |
+      Implement `running_average(numbers)` — a generator function that takes
+      an iterable of numbers and **yields** the running average after each
+      new element.
+
+      ```python
+      list(running_average([10, 20, 30]))
+      # [10.0, 15.0, 20.0]
+      #  ^10/1  ^30/2  ^60/3
+
+      list(running_average([4, 2, 6, 8]))
+      # [4.0, 3.0, 4.0, 5.0]
+
+      list(running_average([]))
+      # []
+      ```
+
+      **Requirements**:
+      - Must be a generator function (use `yield`, not `return [...]`).
+      - Yields a float after each element — cumulative sum / count so far.
+      - Handles empty input (yields nothing).
+
+      **C mental model**: this is a for-loop that maintains two accumulators
+      (total and count) and writes the ratio to an output buffer at each step —
+      except the generator suspends instead of writing, and the caller pulls
+      values one at a time.
+    hint: >
+      Maintain `total = 0` and `count = 0`. Loop through numbers with a
+      for-loop. Inside the loop, update total and count, then `yield total / count`.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

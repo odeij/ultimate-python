@@ -1,0 +1,80 @@
+slug: basic_class
+title: "Classes: Python's Object Model From the Ground Up"
+topic: classes
+month: 1
+week: 4
+difficulty: medium
+estimated_minutes: 40
+prerequisites:
+  - generators
+next_lesson: inheritance
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      Where are instance attributes stored by default in a Python object?
+    options:
+      - "In a fixed C struct, laid out at class definition time"
+      - "In a per-instance dictionary accessible as obj.__dict__"
+      - "In the class object, shared across all instances"
+      - "In a slot table defined in the object header"
+    correct: 1
+    explanation: >
+      By default, each Python object carries a `__dict__` — a regular Python
+      dict that maps attribute names to values. `obj.x = 5` is stored as
+      `obj.__dict__['x'] = 5`. This is unlike a C struct where fields have
+      fixed offsets — Python attributes are dynamic and can be added at any
+      time. The flexibility costs memory; `__slots__` removes __dict__ to
+      reduce per-instance overhead.
+
+  - id: q2
+    type: short_answer
+    question: >
+      What dunder method should you implement to make `print(obj)` show a
+      human-readable string representation of your object?
+    accepted:
+      - "__str__"
+      - "__str__()"
+      - "str"
+    explanation: >
+      `__str__` is called by str() and print(). It should return a
+      human-readable string. `__repr__` is for unambiguous machine-readable
+      representation (used in the REPL and for debugging). Rule of thumb:
+      implement __repr__ always; implement __str__ when you want print() to
+      show something different from the repr.
+
+  - id: q3
+    type: code
+    title: "Implement class Vector2D"
+    description: |
+      Implement a `Vector2D` class representing a 2D vector with support for
+      arithmetic and comparison operators.
+
+      ```python
+      a = Vector2D(1, 2)
+      b = Vector2D(3, 4)
+
+      a + b          # Vector2D(4, 6)
+      a * 3          # Vector2D(3, 6)
+      a == Vector2D(1, 2)  # True
+      repr(a)        # "Vector2D(1, 2)"
+      ```
+
+      **Requirements**:
+      - `__init__(self, x, y)` — stores x and y as instance attributes.
+      - `__repr__` — returns `"Vector2D(x, y)"` exactly.
+      - `__add__` — vector addition, returns a new `Vector2D`.
+      - `__mul__` — scalar multiplication (int or float), returns a new `Vector2D`.
+      - `__eq__` — two vectors are equal if both x and y match.
+
+      **C mental model**: this is a struct with operator overloads. In C you'd
+      write `vec_add(a, b)` explicitly; Python lets you define `__add__` so
+      `a + b` works naturally.
+    hint: >
+      Each operator method receives `self` and `other`. `__add__` should return
+      `Vector2D(self.x + other.x, self.y + other.y)`. `__mul__` receives a
+      scalar (not a Vector2D). Use an f-string in `__repr__`.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

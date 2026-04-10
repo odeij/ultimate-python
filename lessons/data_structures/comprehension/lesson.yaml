@@ -7,7 +7,7 @@ difficulty: medium
 estimated_minutes: 35
 prerequisites:
   - set
-next_lesson: null
+next_lesson: decorators
 theory_file: theory.md
 
 exercises:

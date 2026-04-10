@@ -1,0 +1,80 @@
+slug: context_managers
+title: "Context Managers: RAII the Python Way"
+topic: advanced
+month: 1
+week: 3
+difficulty: medium
+estimated_minutes: 30
+prerequisites:
+  - decorators
+next_lesson: generators
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      A context manager's __exit__ method receives three arguments after
+      `self`. What are they?
+    options:
+      - "The return value of __enter__, a message string, and a boolean"
+      - "The exception type, exception value, and traceback — all None if no exception occurred"
+      - "The start time, end time, and elapsed duration"
+      - "The context object, the block result, and a cleanup flag"
+    correct: 1
+    explanation: >
+      __exit__(self, exc_type, exc_val, exc_tb) is called when the `with`
+      block exits — whether normally or due to an exception. If no exception
+      occurred, all three are None. If __exit__ returns a truthy value, the
+      exception is suppressed. If it returns falsy (or nothing), the exception
+      propagates. This mirrors C RAII: cleanup always runs, whether or not the
+      block succeeds.
+
+  - id: q2
+    type: short_answer
+    question: >
+      In a `contextlib.contextmanager` generator, what keyword marks the
+      point where the `with` block executes — i.e., separates setup from
+      teardown?
+    accepted:
+      - "yield"
+      - "yield statement"
+      - "the yield"
+    explanation: >
+      In a @contextmanager generator, code before `yield` runs on __enter__,
+      the yielded value becomes the `as` target, and code after `yield` runs
+      on __exit__. The generator is suspended at `yield` while the `with`
+      block executes. This is the clearest way to write simple context managers
+      without a full class.
+
+  - id: q3
+    type: code
+    title: "Implement class Timer"
+    description: |
+      Implement a `Timer` context manager class that measures the elapsed
+      wall-clock time of a `with` block.
+
+      ```python
+      import time
+
+      with Timer() as t:
+          time.sleep(0.05)
+
+      print(t.elapsed)   # ~0.05  (seconds, float)
+      ```
+
+      **Requirements**:
+      - `__enter__` records the start time and returns `self`.
+      - `__exit__` records the elapsed time in `self.elapsed` (seconds, float).
+      - `__exit__` must **not** suppress exceptions (return a falsy value).
+      - Use `time.perf_counter()` for high-resolution timing.
+
+      **C mental model**: this is `clock_gettime(CLOCK_MONOTONIC, &start)` /
+      `clock_gettime(CLOCK_MONOTONIC, &end)` wrapped in a destructor — except
+      Python guarantees __exit__ runs even if an exception is raised.
+    hint: >
+      In __enter__: store `self.start = time.perf_counter()` and `return self`.
+      In __exit__: store `self.elapsed = time.perf_counter() - self.start` and
+      `return False` (or just `return`).
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py
