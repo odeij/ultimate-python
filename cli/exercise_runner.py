@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from cli.renderer import Renderer
 
 _LETTERS = "ABCDEFGHIJ"
+_QUIT_TOKENS = {"q", "quit", "exit", ":q"}   # anything in this set quits the lesson
 
 
 class ExerciseRunner:
@@ -38,6 +39,20 @@ class ExerciseRunner:
         self.renderer  = renderer
         self.progress  = progress
         self.workspace = workspace_root
+
+    # ------------------------------------------------------------------
+    # Quit helper — replaces bare renderer.wait() calls so that typing
+    # 'q' at the "press Enter" prompt also triggers a clean exit.
+    # ------------------------------------------------------------------
+
+    def _wait_or_quit(self) -> None:
+        """Show a continue prompt that also accepts 'q' to quit the lesson."""
+        from cli.models import QuitLesson
+        val = self.renderer.prompt(
+            "  [dim][Enter] continue  ·  [q] save & quit lesson[/dim]  ❯ "
+        )
+        if val.lower() in _QUIT_TOKENS:
+            raise QuitLesson()
 
     def run(
         self,
@@ -75,11 +90,19 @@ class ExerciseRunner:
         self.renderer.show_question(ex.question)
         self.renderer.show_options(ex.options)
 
+        from cli.models import QuitLesson
+
         valid = _LETTERS[: len(ex.options)]
         while True:
-            raw = self.renderer.prompt("  Your answer (letter): ").upper()
+            raw = self.renderer.prompt(
+                f"  Your answer ({'/'.join(valid)})  [dim]or [q] to quit[/dim]: "
+            ).upper()
+
+            if raw.lower() in _QUIT_TOKENS:
+                raise QuitLesson()
+
             if not raw or raw[0] not in valid:
-                self.renderer.warning(f"Enter one of: {', '.join(valid)}")
+                self.renderer.warning(f"Enter one of: {', '.join(valid)}  (or q to quit)")
                 continue
 
             chosen = _LETTERS.index(raw[0])
@@ -91,14 +114,16 @@ class ExerciseRunner:
                 break
             else:
                 self.renderer.show_incorrect(ex.explanation)
-                retry = self.renderer.prompt("  Try again? [y/n]: ").lower()
+                retry = self.renderer.prompt("  Try again? [y/n/q]: ").lower()
+                if retry in _QUIT_TOKENS:
+                    raise QuitLesson()
                 if retry == "y":
                     self.renderer.show_question(ex.question)
                     self.renderer.show_options(ex.options)
                     continue
                 break
 
-        self.renderer.wait()
+        self._wait_or_quit()
 
     # ------------------------------------------------------------------
     # Short answer
@@ -119,26 +144,36 @@ class ExerciseRunner:
 
         self.renderer.show_question(ex.question)
 
+        from cli.models import QuitLesson
+
         while True:
-            answer = self.renderer.prompt("  Your answer: ").lower().strip()
+            answer = self.renderer.prompt(
+                "  Your answer  [dim]or [q] to quit[/dim]: "
+            ).strip()
+
+            if answer.lower() in _QUIT_TOKENS:
+                raise QuitLesson()
+
             if not answer:
                 continue
 
             self.progress.record_attempt(lesson_slug, ex.id)
 
-            if answer in ex.accepted:
+            if answer.lower() in ex.accepted:
                 self.renderer.show_correct(ex.explanation)
                 self.progress.mark_exercise_completed(lesson_slug, ex.id)
                 break
             else:
                 self.renderer.show_incorrect(ex.explanation)
-                retry = self.renderer.prompt("  Try again? [y/n]: ").lower()
+                retry = self.renderer.prompt("  Try again? [y/n/q]: ").lower()
+                if retry in _QUIT_TOKENS:
+                    raise QuitLesson()
                 if retry == "y":
                     self.renderer.show_question(ex.question)
                     continue
                 break
 
-        self.renderer.wait()
+        self._wait_or_quit()
 
     # ------------------------------------------------------------------
     # Code exercise
@@ -159,10 +194,13 @@ class ExerciseRunner:
         if self.progress.is_exercise_completed(lesson_slug, ex.id):
             self.renderer.show_already_completed()
 
+        from cli.models import QuitLesson
+
         options: list[tuple[str, str]] = [("1", "Run tests against my solution")]
         if ex.hint:
             options.append(("2", "Show hint"))
         options.append(("s", "Skip this exercise"))
+        options.append(("q", "Save and quit lesson"))
 
         while True:
             self.renderer.show_numbered_menu("What would you like to do?", options)
@@ -175,7 +213,7 @@ class ExerciseRunner:
 
                 if all(passed for _, passed, _ in results):
                     self.progress.mark_exercise_completed(lesson_slug, ex.id)
-                    self.renderer.wait()
+                    self._wait_or_quit()
                     return
 
                 # Failed — allow retry (user edits file externally, then re-runs)
@@ -187,6 +225,9 @@ class ExerciseRunner:
             elif choice.lower() == "s":
                 self.renderer.info("Exercise skipped.")
                 return
+
+            elif choice.lower() in _QUIT_TOKENS:
+                raise QuitLesson()
 
             else:
                 self.renderer.warning("Invalid choice.")

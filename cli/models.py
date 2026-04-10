@@ -47,6 +47,14 @@ class CodeExercise:
 Exercise = Union[MultipleChoiceExercise, ShortAnswerExercise, CodeExercise]
 
 
+class QuitLesson(Exception):
+    """Raised from anywhere inside an exercise to exit back to the lesson runner.
+
+    Progress written to disk before this is raised is preserved — the exception
+    is purely a control-flow signal, not an error.
+    """
+
+
 # ---------------------------------------------------------------------------
 # Lesson structure
 # ---------------------------------------------------------------------------

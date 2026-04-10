@@ -118,6 +118,45 @@ class Renderer:
         self.console.print(Markdown(section.body))
         self.console.print()
 
+    def show_quit_summary(self, lesson: "Lesson", progress: object) -> None:
+        """Show what was saved when the user quits mid-lesson."""
+        from cli.progress import ProgressTracker
+        assert isinstance(progress, ProgressTracker)
+
+        completed = [
+            ex for ex in lesson.exercises
+            if progress.is_exercise_completed(lesson.slug, ex.id)
+        ]
+        remaining = [
+            ex for ex in lesson.exercises
+            if not progress.is_exercise_completed(lesson.slug, ex.id)
+        ]
+
+        lines: list[str] = ["[bold]Progress saved.[/bold]  You can continue this lesson any time.\n"]
+
+        if completed:
+            lines.append("[green]Completed:[/green]")
+            for ex in completed:
+                from cli.models import CodeExercise
+                label = ex.title if isinstance(ex, CodeExercise) else f"Exercise {ex.id}"
+                lines.append(f"  [green]✓[/green]  {label}")
+
+        if remaining:
+            lines.append("\n[dim]Still to do:[/dim]")
+            for ex in remaining:
+                from cli.models import CodeExercise
+                label = ex.title if isinstance(ex, CodeExercise) else f"Exercise {ex.id}"
+                lines.append(f"  [dim]·[/dim]  {label}")
+
+        self.console.print()
+        self.console.print(Panel(
+            "\n".join(lines),
+            title="[dim]Quit mid-lesson[/dim]",
+            border_style="yellow",
+            padding=(1, 4),
+        ))
+        self.console.print()
+
     def show_lesson_complete(self, lesson: "Lesson") -> None:
         next_hint = (
             f"\n  [dim]Next:[/dim] [bold]{lesson.next_lesson}[/bold]"

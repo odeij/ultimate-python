@@ -298,27 +298,39 @@ class App:
     # ------------------------------------------------------------------
 
     def _run_lesson(self, lesson: Lesson) -> None:
-        """Full lesson flow: header → sections → exercises → completion."""
+        """Full lesson flow: header → sections → exercises → completion.
+
+        Typing 'q' at any prompt raises QuitLesson, which is caught here.
+        Progress written to disk before the quit is always preserved.
+        """
+        from cli.models import QuitLesson
+
         self.progress.mark_lesson_started(lesson.slug)
         self.renderer.show_lesson_header(lesson)
 
-        # --- Theory sections ---
-        for i, section in enumerate(lesson.sections, start=1):
-            self.renderer.show_section(section, i, len(lesson.sections))
-            cmd = self.renderer.prompt(
-                "  [dim][Enter] next · [s] skip to exercises · [q] quit lesson[/dim]  ❯ "
-            )
-            if cmd.lower() == "q":
-                return
-            if cmd.lower() == "s":
-                break
+        try:
+            # --- Theory sections ---
+            for i, section in enumerate(lesson.sections, start=1):
+                self.renderer.show_section(section, i, len(lesson.sections))
+                cmd = self.renderer.prompt(
+                    "  [dim][Enter] next · [s] skip to exercises · [q] save & quit[/dim]  ❯ "
+                )
+                if cmd.lower() in ("q", "quit", "exit", ":q"):
+                    raise QuitLesson()
+                if cmd.lower() == "s":
+                    break
 
-        # --- Exercises ---
-        total = len(lesson.exercises)
-        for i, exercise in enumerate(lesson.exercises, start=1):
-            self.runner.run(exercise, lesson.slug, i, total)
+            # --- Exercises ---
+            total = len(lesson.exercises)
+            for i, exercise in enumerate(lesson.exercises, start=1):
+                self.runner.run(exercise, lesson.slug, i, total)
 
-        # --- Completion ---
+        except QuitLesson:
+            self.renderer.show_quit_summary(lesson, self.progress)
+            self.renderer.wait("  [dim][Press Enter to return to menu][/dim]")
+            return
+
+        # --- Completion (only reached if no quit) ---
         all_completed = all(
             self.progress.is_exercise_completed(lesson.slug, ex.id)
             for ex in lesson.exercises
@@ -333,7 +345,7 @@ class App:
             next_lesson = self.loader.get_by_slug(lesson.next_lesson, self._lessons)
             if next_lesson:
                 go = self.renderer.prompt(
-                    f"  Start next lesson  '{next_lesson.title}'? [y/n]: "
+                    f"  Start next lesson '{next_lesson.title}'? [y/n]: "
                 )
                 if go.lower() == "y":
                     self._run_lesson(next_lesson)
