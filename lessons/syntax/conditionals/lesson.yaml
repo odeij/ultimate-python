@@ -1,0 +1,64 @@
+slug: conditionals
+title: "Conditionals: Truthiness & Short-Circuit Evaluation"
+topic: syntax
+month: 1
+week: 1
+difficulty: easy
+estimated_minutes: 20
+prerequisites:
+  - variables
+next_lesson: functions
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: "Which of the following is falsy in Python?"
+    options:
+      - "\"false\"  (the string with contents 'false')"
+      - "[]         (an empty list)"
+      - "[0]        (a list containing zero)"
+      - "0.1        (a non-zero float)"
+    correct: 1
+    explanation: >
+      Empty containers are falsy: [], {}, (), set(), and "".
+      The string "false" is non-empty so it is truthy.
+      [0] is a list with one element — non-empty, so truthy.
+      Any non-zero number is truthy.
+
+  - id: q2
+    type: short_answer
+    question: >
+      In Python, `x = a or b` assigns the value of `a` if a is truthy,
+      otherwise it assigns the value of `b`. What does `x = None or 42` evaluate to?
+    accepted:
+      - "42"
+      - "42 "
+    explanation: >
+      `None` is falsy, so `None or 42` evaluates to 42.
+      `or` returns the first truthy operand, or the last operand if all are falsy.
+      This is the standard Python idiom for default values.
+
+  - id: q3
+    type: code
+    title: "Implement safe_divide(a, b)"
+    description: |
+      Implement `safe_divide(a, b)` that returns `a / b` if `b` is non-zero,
+      or `0.0` if `b` is zero — **using a single expression with `or`**.
+
+      ```python
+      safe_divide(10, 2)   # 5.0
+      safe_divide(7, 0)    # 0.0
+      safe_divide(0, 5)    # 0.0
+      ```
+
+      **Constraint**: your function body must be a single `return` statement
+      using a conditional expression or short-circuit logic.  No `if` blocks.
+
+      **C mental model**: Python's short-circuit `and`/`or` return values,
+      not booleans — closer to C's ternary `b ? a/b : 0.0` than to `&&`/`||`.
+    hint: >
+      b and (a / b) evaluates to a/b when b is truthy, or b (which is 0/falsy)
+      when b is zero. Then `or 0.0` provides the explicit float default.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

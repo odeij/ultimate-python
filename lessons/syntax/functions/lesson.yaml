@@ -1,0 +1,74 @@
+slug: functions
+title: "Functions: First-Class Objects & the Mutable Default Trap"
+topic: syntax
+month: 1
+week: 2
+difficulty: easy
+estimated_minutes: 30
+prerequisites:
+  - variables
+  - conditionals
+next_lesson: null
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      You call append_broken(1), then append_broken(2) where
+      `def append_broken(x, lst=[])` appends x to lst and returns it.
+      What does the second call return?
+    options:
+      - "[2]   — a fresh list with only 2"
+      - "[1, 2] — the same list from the first call, now with 2 appended"
+      - "None  — the function is broken and returns nothing"
+      - "TypeError — mutable defaults are forbidden"
+    correct: 1
+    explanation: >
+      The default list `[]` is created once at function definition time and
+      reused across calls — like a C static local variable. Both calls append
+      to the same list object. The fix: use None as the default sentinel and
+      create a fresh list inside the function body.
+
+  - id: q2
+    type: short_answer
+    question: >
+      What is the name of the special Python attribute that stores a function's
+      default argument values as a tuple?
+    accepted:
+      - "__defaults__"
+      - "func.__defaults__"
+      - "__defaults__ "
+    explanation: >
+      func.__defaults__ is a tuple of default values for the function's positional
+      parameters that have defaults. For `def f(a, b=1, c=2): ...` it is (1, 2).
+      You can inspect it to see if a mutable default has been mutated.
+
+  - id: q3
+    type: code
+    title: "Fix the mutable default argument"
+    description: |
+      The function `build_history` below uses a mutable default argument.
+      Your task: re-implement it correctly so each call without an explicit
+      `history` argument gets a fresh list.
+
+      ```python
+      # BROKEN — do not copy this
+      def build_history(event, history=[]):
+          history.append(event)
+          return history
+
+      build_history("login")   # ["login"]
+      build_history("click")   # ["login", "click"]  ← BUG: shared state!
+      ```
+
+      **Requirement**: fix the signature and body.  The function must still
+      accept an optional `history` list so callers can pass their own.
+
+      **C mental model**: a mutable default is like a `static` local variable
+      in C — it persists across calls.  The Pythonic fix is a `None` sentinel.
+    hint: >
+      Replace the default [] with None. At the top of the function body,
+      write: `if history is None: history = []`
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

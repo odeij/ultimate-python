@@ -1,0 +1,60 @@
+slug: variables
+title: "Variables & References: Names, Not Boxes"
+topic: syntax
+month: 1
+week: 1
+difficulty: easy
+estimated_minutes: 25
+prerequisites: []
+next_lesson: conditionals
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: "In Python, what does `a = b` do when b is a list?"
+    options:
+      - "Creates a full copy of the list and binds it to a"
+      - "Makes a and b reference the same list object in memory"
+      - "Transfers ownership of the list from b to a"
+      - "Raises a TypeError because lists are mutable"
+    correct: 1
+    explanation: >
+      Python variables are references — like pointers that auto-dereference.
+      `a = b` copies the reference, not the object. Both names now point to
+      the same list in memory. Mutating through either name affects the other.
+
+  - id: q2
+    type: short_answer
+    question: "What built-in Python function returns the memory address (identity) of an object?"
+    accepted:
+      - "id"
+      - "id()"
+    explanation: >
+      id() returns the CPython memory address of an object — the Python
+      equivalent of printing a pointer value in C. `a is b` is shorthand for
+      id(a) == id(b).
+
+  - id: q3
+    type: code
+    title: "Implement is_same_object(a, b)"
+    description: |
+      Implement `is_same_object(a, b)` that returns `True` if `a` and `b`
+      refer to the **same object** in memory, `False` otherwise.
+
+      **C mental model**: this is like comparing two pointers for address
+      equality — not comparing the values stored at those addresses.
+
+      ```python
+      lst = [1, 2, 3]
+      ref = lst
+      is_same_object(lst, ref)   # True  — same pointer
+      is_same_object(lst, [1, 2, 3])  # False — different object, equal value
+      ```
+
+      **Do NOT use `==`.**  Python has a dedicated operator for identity checks.
+    hint: >
+      Python's `is` keyword checks object identity (same memory address),
+      not value equality.  It's the equivalent of ptr_a == ptr_b in C.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

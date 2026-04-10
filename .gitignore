@@ -17,3 +17,7 @@ build/
 htmlcov/
 venv/
 brainstorm/
+
+# Interactive shell — user progress and generated workspace files
+.progress/
+user_workspace/solutions/
