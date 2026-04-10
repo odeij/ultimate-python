@@ -8,7 +8,7 @@ estimated_minutes: 30
 prerequisites:
   - variables
   - conditionals
-next_lesson: null
+next_lesson: list
 theory_file: theory.md
 
 exercises:

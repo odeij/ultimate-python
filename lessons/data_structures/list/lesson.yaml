@@ -1,0 +1,73 @@
+slug: list
+title: "Lists: Dynamic Arrays Under the Hood"
+topic: data_structures
+month: 1
+week: 2
+difficulty: easy
+estimated_minutes: 30
+prerequisites:
+  - functions
+next_lesson: dict
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      You have `a = [1, 2, 3]` and `b = a`. You then call `b.append(4)`.
+      What does `a` contain?
+    options:
+      - "[1, 2, 3]  — a is unaffected because b is a copy"
+      - "[1, 2, 3, 4] — a and b reference the same list object"
+      - "[4]  — b was reassigned to a new list"
+      - "TypeError — you cannot append to an aliased list"
+    correct: 1
+    explanation: >
+      `b = a` copies the reference, not the list. Both names point to the same
+      object in memory. `b.append(4)` mutates that shared object in place, so
+      `a` sees the change too. To get an independent copy, use `b = a[:]` or
+      `b = list(a)` — like memcpy() in C.
+
+  - id: q2
+    type: short_answer
+    question: >
+      What is the amortized time complexity of list.append() in CPython?
+    accepted:
+      - "o(1)"
+      - "o(1) amortized"
+      - "amortized o(1)"
+      - "constant"
+      - "constant time"
+      - "1"
+    explanation: >
+      CPython's list is a dynamic array (like std::vector). append() is O(1)
+      amortized: most appends just write to pre-allocated space, but
+      occasionally the buffer is exhausted and a realloc doubles the capacity
+      — that expensive copy is amortised over the N cheap appends that follow.
+
+  - id: q3
+    type: code
+    title: "Implement rotate_left(lst, k)"
+    description: |
+      Implement `rotate_left(lst, k)` that returns a **new** list with the
+      elements rotated left by `k` positions.
+
+      ```python
+      rotate_left([1, 2, 3, 4, 5], 2)  # [3, 4, 5, 1, 2]
+      rotate_left([1, 2, 3], 0)         # [1, 2, 3]
+      rotate_left([1, 2, 3], 3)         # [1, 2, 3]  (full rotation)
+      rotate_left([], 5)                # []
+      ```
+
+      **Requirements**:
+      - Do **not** mutate the input list.
+      - Handle `k` larger than `len(lst)` correctly (use modulo).
+      - Return a new list, not a view or iterator.
+
+      **C mental model**: slicing `lst[k:]` gives you a pointer-indexed
+      sub-array read; `+` concatenates two arrays into a freshly allocated one.
+    hint: >
+      Use the modulo operator to normalise k: `k = k % len(lst)`.
+      Then the answer is a one-liner using slicing and list concatenation.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

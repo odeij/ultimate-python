@@ -1,0 +1,77 @@
+slug: comprehension
+title: "Comprehensions: Expressions That Build Collections"
+topic: data_structures
+month: 1
+week: 2
+difficulty: medium
+estimated_minutes: 35
+prerequisites:
+  - set
+next_lesson: null
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      What is the key difference between `[x*2 for x in range(5)]`
+      and `(x*2 for x in range(5))`?
+    options:
+      - "They are identical — parentheses vs brackets make no difference"
+      - "The first builds a full list in memory; the second is a lazy generator that yields values one at a time"
+      - "The second raises a SyntaxError — generators need the `yield` keyword"
+      - "The first is evaluated at call time; the second at definition time"
+    correct: 1
+    explanation: >
+      Square brackets [] create a list comprehension — all values are computed
+      immediately and stored in a contiguous list in memory. Parentheses ()
+      create a generator expression — values are computed lazily, one at a time,
+      only when consumed. For large datasets, generators avoid allocating the
+      full output list. In C terms: the list is like malloc'ing an array upfront;
+      the generator is like a cursor/iterator that computes the next value on demand.
+
+  - id: q2
+    type: short_answer
+    question: >
+      Write the syntax to create a **set** comprehension of squares of even
+      numbers from 0 to 9. (Write the expression itself, not a full statement.)
+    accepted:
+      - "{x**2 for x in range(10) if x % 2 == 0}"
+      - "{x**2 for x in range(0,10) if x % 2 == 0}"
+      - "{ x**2 for x in range(10) if x % 2 == 0 }"
+      - "{x*x for x in range(10) if x % 2 == 0}"
+      - "{x**2 for x in range(10) if not x % 2}"
+    explanation: >
+      Set comprehensions use curly braces: `{expr for var in iterable if condition}`.
+      The result is a set (unordered, unique values). Dict comprehensions look
+      similar but have a colon: `{k: v for ...}`. The syntax is
+      the same for list, set, dict, and generator — only the brackets differ.
+
+  - id: q3
+    type: code
+    title: "Implement flatten(matrix)"
+    description: |
+      Implement `flatten(matrix)` that takes a 2D list (list of lists) and
+      returns a flat 1D list containing all elements in row-major order.
+
+      ```python
+      flatten([[1, 2], [3, 4], [5, 6]])   # [1, 2, 3, 4, 5, 6]
+      flatten([[1], [2, 3, 4], [5]])       # [1, 2, 3, 4, 5]
+      flatten([])                           # []
+      flatten([[]])                         # []
+      ```
+
+      **Requirements**:
+      - Use a **list comprehension** (not a for-loop with append).
+      - Handle empty inner lists and empty outer list.
+      - Return a new flat list — do not mutate the input.
+
+      **C mental model**: this is equivalent to iterating a 2D array in
+      row-major order and writing each element into a 1D output array.
+      The comprehension does the nested iteration in one expression.
+    hint: >
+      A nested comprehension has the form:
+      `[elem for row in matrix for elem in row]`.
+      The outer loop (`for row in matrix`) comes first, then the inner loop.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py

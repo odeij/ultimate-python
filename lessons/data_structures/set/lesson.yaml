@@ -1,0 +1,78 @@
+slug: set
+title: "Sets: Unordered, Unique, O(1) Lookup"
+topic: data_structures
+month: 1
+week: 2
+difficulty: easy
+estimated_minutes: 25
+prerequisites:
+  - dict
+next_lesson: comprehension
+theory_file: theory.md
+
+exercises:
+  - id: q1
+    type: multiple_choice
+    question: >
+      What is the time complexity of `x in my_set` for a Python set?
+    options:
+      - "O(n) — Python scans the set linearly"
+      - "O(log n) — sets are sorted binary trees"
+      - "O(1) average — sets use a hash table"
+      - "O(n log n) — depends on the elements"
+    correct: 2
+    explanation: >
+      Python's set is implemented as a hash table (identical to dict minus the
+      values). Membership testing computes hash(x) to find the bucket directly —
+      O(1) average, O(n) worst case on hash collisions. This makes sets the right
+      tool whenever you need repeated membership checks — far better than scanning
+      a list, which is always O(n).
+
+  - id: q2
+    type: short_answer
+    question: >
+      Name any one of the three main set binary operators in Python
+      (the mathematical set operations).
+    accepted:
+      - "union"
+      - "intersection"
+      - "difference"
+      - "|"
+      - "&"
+      - "-"
+      - "symmetric_difference"
+      - "^"
+    explanation: >
+      Python sets support: union (a | b), intersection (a & b),
+      difference (a - b), and symmetric_difference (a ^ b).
+      These mirror the mathematical definitions and are all O(min(len(a), len(b)))
+      or O(len(a) + len(b)) depending on the operation.
+
+  - id: q3
+    type: code
+    title: "Implement find_duplicates(lst)"
+    description: |
+      Implement `find_duplicates(lst)` that returns a **sorted list** of
+      elements that appear more than once in `lst`.
+
+      ```python
+      find_duplicates([1, 2, 3, 2, 4, 3])  # [2, 3]
+      find_duplicates([1, 2, 3])             # []
+      find_duplicates([])                    # []
+      find_duplicates([5, 5, 5])             # [5]
+      ```
+
+      **Requirements**:
+      - Each duplicate appears only once in the output (no repeated entries).
+      - Return the duplicates sorted in ascending order.
+      - O(n) solution preferred — use sets to track seen/duplicate elements.
+
+      **C mental model**: two hash sets — one for "seen", one for "duplicates".
+      For each element: if it's in "seen", add it to "duplicates"; otherwise
+      add it to "seen". Then return the duplicates set sorted.
+    hint: >
+      Maintain two sets: `seen` and `dupes`. Loop through `lst` once:
+      if the element is already in `seen`, add it to `dupes`; otherwise add it
+      to `seen`. Return `sorted(dupes)` at the end.
+    starter_file: exercises/q3_starter.py
+    test_file: exercises/q3_tests.py
